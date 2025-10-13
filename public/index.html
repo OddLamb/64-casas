@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>64 Casas - Xadrez Online</title>
+    <link href="./styles.css" rel="stylesheet">
+
+    <script src="./p5.min.js"></script>
+    <script src="./addons/p5.sound.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+
+  </head>
+
+  <body>
+    <span class="matchEndBanner" style="display: none;"></span>
+    <div id="notifications-container"></div>
+    <div id="canvas-container"></div>
+    <div id="info">
+      <div id="inputs">
+        <input type="text" placeholder="Código da partida" id="matchCode">
+        <input type="button" value="Iniciar partida" id="initMatch">
+      </div>
+      <span id="turn"></span>
+    </div>
+  </body>
+  <script src="sketch.js"></script>
+</html>
