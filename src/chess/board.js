@@ -194,18 +194,20 @@ export const findPiece = (color,pieceID,board) => {
   return piecePos;
 }
 export const onCheckMate = (color, board) => {
-  if(onCheck(color, board)){
-    const kingPos = findPiece(color,"king",board);
-    const avaiableMoves = getAvaiableMoves(kingPos,board);
-    for(var i = 0;i<avaiableMoves;i++){
-      const pos  = avaiableMoves[i];
-      const moveBoard = [...board];
-      moveBoardPiece(kingPos,pos,moveBoard);
-      if(!onCheck(color,moveBoard)){
-        return false;
+  for(var i = 0; i < board.length; i++){
+    const piecePos = i;
+    const piece = board[piecePos]
+    if(piece && piece[1] == color){
+      const avaiableMoves = getAvaiableMoves(piecePos,board); 
+      for(var m = 0;m<avaiableMoves;m++){
+        const pos  = avaiableMoves[m];
+        const moveBoard = [...board];
+        moveBoardPiece(piecePos,pos,moveBoard);
+        if(!onCheck(color,moveBoard)){
+          return false;
+        }
       }
     }
-    return true;
   }
-  return false;
+  return true;
 }
