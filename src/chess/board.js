@@ -5,7 +5,6 @@ export const createBoard = () => {
           board[y * 8 + x] = null;
       }
   }
-  // grid[y*width+x]
   board[0*8+0] = ["tower","black"];
   board[0*8+1] = ["knight","black"];
   board[0*8+2] = ["bishop","black"];

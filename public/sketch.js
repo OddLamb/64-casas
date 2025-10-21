@@ -75,10 +75,11 @@ const create_notification = (text) => {
 const updateTurnSpan = () =>{
     const turnSpan = document.querySelector("#turn");
     if(onMatch){
-        const turnText = player.turn==player.color?"Seu turno":"Turno do inimigo";
+        const turnText = player.turn==player.color?"Seu turno":"Turno do oponente";
         turnSpan.textContent = turnText;
+        turnSpan.style.visibility = "visible";
     }else{
-        turnSpan.textContent = "";
+        turnSpan.style.visibility = "hidden";
     }
 }
 const pointSquare = (pointX, pointY, sqrX, sqrY, sqrWid, sqrHei) => {
@@ -91,15 +92,37 @@ const getPos = (x, y, color=player.color) =>{
 const drawBoard = () => {
     const tileSize = canvas.width/8;
     stroke("#ffffffff")
+    strokeWeight(3)
+    const darkColor = "#573213";
+    const lighterColor = "#fac69b"
     for (let x = 0; x < 8; x++) {
         for (let y = 0; y < 8; y++) {
-            if ((x + y) % 2 == 0) {
-                fill("#573213");
-            } else {
-                fill("#fac69b");
-            }
+            const cellColor = (x + y) % 2 == 0 ? darkColor : lighterColor;
+            fill(cellColor);
             rect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
+    }
+    noStroke();
+    textSize(20)
+    textAlign(LEFT,BOTTOM)
+    const textMargin = 5;
+    for(let y = 0; y <= 8; y++){
+        const textColor = y % 2 == 0 ? darkColor : lighterColor;
+        const textX = textMargin
+        const textY = y * tileSize-textMargin;
+        const cood = player.color == "white" ? 8-y+1 : y;
+        fill(textColor);
+        text(cood, textX, textY)
+    }
+    const letters = ["A","B","C","D","E","F","G","H"];
+    textAlign(RIGHT,TOP)
+    for(let x = 0; x <= 8; x++){
+        const textColor = x % 2 != 0 ? darkColor : lighterColor;
+        const textX = x * tileSize - textMargin + tileSize;
+        const textY = textMargin;
+        const cood = player.color == "white" ? letters[x] : letters[7-x];
+        fill(textColor);
+        text(cood, textX, textY)
     }
     for (let x = 0; x < 8; x++) {
         for (let y = 0; y < 8; y++) {
@@ -161,7 +184,7 @@ const drawBackground = () => {
     stroke("black")
 }
 function preload(){
-    defaultFont = loadFont("assets/Crusades.ttf")
+    defaultFont = loadFont("assets/Rubintek-DYz13.ttf")
     soundCache["move-sfx"] = loadSound("assets/move.mp3")
     imageCache["black-bishop"] = loadImage("assets/black-bishop.png")
     imageCache["black-king"] = loadImage("assets/black-king.png")
@@ -181,7 +204,8 @@ function setup(){
     const canvasSize = constrain(windowWidth,0,800)
     canvas = createCanvas(canvasSize,canvasSize);
     canvas.parent("canvas-container");
-    textFont(defaultFont)
+    textFont(defaultFont);
+    smooth();
 }
 function mouseClicked(){
     const matchEndBanner = document.querySelector(".matchEndBanner");

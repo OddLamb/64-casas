@@ -47,42 +47,43 @@ export class GameManager{
         }; 
         const player = this.players[playerID];
         socket.on("enter-match",(data) => {
-            if(player.roomID == null){
-                if(this.pendingPlayer){
-                    if(this.pendingPlayer != playerID){
-                        player.roomID = this.players[this.pendingPlayer].roomID;
-                        const board = createBoard();
-
-                        this.rooms[player.roomID] = {
-                            players: [this.pendingPlayer, playerID],
-                            turn: "white",
-                            board: board
-                        };
-
-                        const pendingColor = Math.random() > .5 ? "white" : "black";
-                        const playerColor = pendingColor == "white" ? "black" : "white";
-                        const enteredMatchData = {turn: "white", board: board}
-
-                        this.send("entered-match",{color: playerColor,...enteredMatchData},playerID);
-                        this.send("entered-match",{color: pendingColor,...enteredMatchData},this.pendingPlayer);
-
-                        console.log(`Partida iniciada com o jogador ${playerID} e ${this.pendingPlayer}`);
-                        
-                        this.pendingPlayer = null;
-                    }else{
-                        console.log(`O jogador ${socket.id} já está esperando por uma partida`)
-                    }
-                }else{
-                    this.pendingPlayer = playerID,
-                    player.roomID = v4();
-                    console.log(`O jogador ${socket.id} está esperando por uma partida`)
-                }
-            }else{
+            if(player.roomID != null){
                 console.log(`O jogador ${socket.id} já está em uma partida`)
+                return;
             }
+            if(!this.pendingPlayer){
+                this.pendingPlayer = playerID;
+                player.roomID = v4();
+                console.log(`O jogador ${socket.id} está esperando por uma partida`);
+                return;
+            }else{
+                player.roomID = this.players[this.pendingPlayer].roomID;
+                const board = createBoard();
+
+                this.rooms[player.roomID] = {
+                    players: [this.pendingPlayer, playerID],
+                    turn: "white",
+                    board: board
+                };
+
+                const pendingColor = Math.random() > .5 ? "white" : "black";
+                const playerColor = pendingColor == "white" ? "black" : "white";
+                const enteredMatchData = {turn: "white", board: board}
+
+                this.send("entered-match",{color: playerColor,...enteredMatchData},playerID);
+                this.send("entered-match",{color: pendingColor,...enteredMatchData},this.pendingPlayer);
+
+                console.log(`Partida iniciada com o jogador ${playerID} e ${this.pendingPlayer}`);
+                this.pendingPlayer = null;
+            }
+            if(this.pendingPlayer == playerID){
+                console.log(`O jogador ${socket.id} já está esperando por uma partida`)
+                return;
+            }
+            
         });
         
-        socket.on("move-piece",(data)=>{
+        socket.on("move-piece",(data) => {
             const fromPos = data.from;
             const toPos = data.to;
 
@@ -90,24 +91,23 @@ export class GameManager{
             const board = match.board;
             const piece = board[fromPos];
 
-            if(piece != null){ 
-                if(checkMoveCorrect(fromPos,toPos,board)){
-                    this.movePiece(fromPos,toPos,player.roomID);
-                    this.switchTurns(player.roomID);
-                    console.log(`O jogador ${socket.id} moveu a peça em ${data.from} para ${data.to}`);
+            if(piece == null){ 
+                console.log(`O jogador ${socket.id} tentou mover uma peça que não existe`);
+                return;
+            }
+            if(!checkMoveCorrect(fromPos,toPos,board)){
+                console.log(`O jogador ${socket.id} tentou mover uma peça para uma posição inadequada`);
+                return;
+            }
+            this.movePiece(fromPos,toPos,player.roomID);
+            this.switchTurns(player.roomID);
+            console.log(`O jogador ${socket.id} moveu a peça em ${data.from} para ${data.to}`);
 
-                    const opponentColor = piece[1] == "white" ? "black" : "white";
-                    if(onCheckMate(opponentColor,board)){
-                        const players = match.players;
-                        this.broadcast("end-match",{"winner": piece[1]},players);
-                        this.clearMatch(player.roomID);
-                    }
-                }else{
-                    console.log(`O jogador ${socket.id} tentou mover uma peça para uma posição inadequada`)
-                }
-
-            }else{
-                console.log(`O jogador ${socket.id} tentou mover uma peça que não existe`)
+            const opponentColor = piece[1] == "white" ? "black" : "white";
+            if(onCheckMate(opponentColor,board)){
+                const players = match.players;
+                this.broadcast("end-match",{"winner": piece[1]},players);
+                this.clearMatch(player.roomID);
             }
         }); 
         socket.on("disconnect", (reason) => {
